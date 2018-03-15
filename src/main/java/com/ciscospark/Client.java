@@ -146,103 +146,9 @@ class Client {
         }
     }
 
-  /*  <T> Response request(URL url, String method, T body) {
-        if (accessToken == null) {
-            if (!authenticate()) {
-                throw new NotAuthenticatedException();
-            }
-        }
-
-        try {
-            return doRequest(url, method, body);
-        } catch (NotAuthenticatedException ex) {
-            if (authenticate()) {
-                return doRequest(url, method, body);
-            } else {
-                throw ex;
-            }
-        }
-    }*/
-    
-	private boolean authenticate() {
-        if (clientId != null && clientSecret != null) {
-            if (authCode != null && redirectUri != null) {
-                log(Level.FINE, "Requesting access token");
-                URL url = getUrl("/access_token",null);
-                AccessTokenRequest body = new AccessTokenRequest();
-                body.setGrant_type("authorization_code");
-                body.setClient_id(clientId);
-                body.setClient_secret(clientSecret);
-                body.setCode(authCode);
-                body.setRedirect_uri(redirectUri);
-                Response response = doRequest(url, "POST", body);
-                AccessTokenResponse responseBody = readJson(AccessTokenResponse.class, response.inputStream);
-                accessToken = responseBody.getAccess_token();
-                refreshToken = responseBody.getRefresh_token();
-                authCode = null;
-                return true;
-            } else if (refreshToken != null) {
-                log(Level.FINE, "Refreshing access token");
-                URL url = getUrl("/access_token",null);
-                AccessTokenRequest body = new AccessTokenRequest();
-                body.setClient_id(clientId);
-                body.setClient_secret(clientSecret);
-                body.setRefresh_token(refreshToken);
-                body.setGrant_type("refresh_token");
-                Response response = doRequest(url, "POST", body);
-                AccessTokenResponse responseBody = readJson(AccessTokenResponse.class, response.inputStream);
-                accessToken = responseBody.getAccess_token();
-                return true;
-            }
-        }
-        return false;
-    }
-
-    private void log(Level level, String msg, Object... args) {
+   private void log(Level level, String msg, Object... args) {
         if (logger != null && logger.isLoggable(level)) {
             logger.log(level, msg, args);
-        }
-    }
-
-    private <T> Response doRequest(URL url, String method, T body) {
-        try {
-            HttpURLConnection connection = getConnection(url);
-            String trackingId = connection.getRequestProperty(TRACKING_ID);
-            connection.setRequestMethod(method);
-            if (logger != null && logger.isLoggable(Level.FINE)) {
-                logger.log(Level.FINE, "Request {0}: {1} {2}",
-                        new Object[] { trackingId, method, connection.getURL().toString() });
-            }
-            if (body != null) {
-                connection.setDoOutput(true);
-                if (logger != null && logger.isLoggable(Level.FINEST)) {
-                    ByteArrayOutputStream byteArrayOutputStream = new ByteArrayOutputStream();
-                    writeJson(body, byteArrayOutputStream);
-                    logger.log(Level.FINEST, "Request Body {0}: {1}",
-                            new Object[] { trackingId, byteArrayOutputStream.toString() });
-                    byteArrayOutputStream.writeTo(connection.getOutputStream());
-                } else {
-                    writeJson(body, connection.getOutputStream());
-                }
-            }
-
-            int responseCode = connection.getResponseCode();
-            if (logger != null && logger.isLoggable(Level.FINE)) {
-                logger.log(Level.FINE, "Response {0}: {1} {2}",
-                        new Object[] { trackingId, responseCode, connection.getResponseMessage() });
-            }
-            checkForErrorResponse(connection, responseCode);
-
-            if (logger != null && logger.isLoggable(Level.FINEST)) {
-                InputStream inputStream = logResponse(trackingId, connection.getInputStream());
-                return new Response(connection, inputStream);
-            } else {
-                InputStream inputStream = connection.getInputStream();
-                return new Response(connection, inputStream);
-
-            }
-        } catch (IOException ex) {
-            throw new SparkException("io error", ex);
         }
     }
 
@@ -458,54 +364,7 @@ class Client {
             throw new SparkException(ex);
         }
     }
-
-    private void writeJson(Object body, OutputStream ostream) {
-        JsonGenerator jsonGenerator = Json.createGenerator(ostream);
-        jsonGenerator.writeStartObject();
-        for (Field field : body.getClass().getDeclaredFields()) {
-            field.setAccessible(true);
-            try {
-                Object value = field.get(body);
-                if (value == null) {
-                    continue;
-                }
-
-                Type type = field.getType();
-                if (type == String.class) {
-                    jsonGenerator.write(field.getName(), (String) value);
-                } else if (type == Integer.class) {
-                    jsonGenerator.write(field.getName(), (Integer) value);
-                } else if (type == BigDecimal.class) {
-                    jsonGenerator.write(field.getName(), (BigDecimal) value);
-                } else if (type == Date.class) {
-                    DateFormat dateFormat = new SimpleDateFormat(ISO8601_FORMAT);
-                    jsonGenerator.write(field.getName(), dateFormat.format(value));
-                } else if (type == URI.class) {
-                    jsonGenerator.write(field.getName(), value.toString());
-                } else if (type == Boolean.class) {
-                    jsonGenerator.write(field.getName(), (Boolean) value);
-                } else if (type == String[].class) {
-                    jsonGenerator.writeStartArray(field.getName());
-                    for (String st : (String[]) value) {
-                        jsonGenerator.write(st);
-                    }
-                    jsonGenerator.writeEnd();
-                } else if (type == URI[].class) {
-                    jsonGenerator.writeStartArray(field.getName());
-                    for (URI uri : (URI[]) value) {
-                        jsonGenerator.write(uri.toString());
-                    }
-                    jsonGenerator.writeEnd();
-                }
-            } catch (IllegalAccessException ex) {
-                // ignore
-            }
-        }
-        jsonGenerator.writeEnd();
-        jsonGenerator.flush();
-        jsonGenerator.close();
-    }
-
+ 
     private class PagingIterator<T> implements Iterator<T> {
         private final Class<T> clazz;
         private URL url;
