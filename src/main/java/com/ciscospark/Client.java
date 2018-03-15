@@ -52,22 +52,22 @@ class Client {
     }
 
     <T> T post(Class<T> clazz, URL url, T body) {
-        return readJson(clazz, request(url, "POST", body).inputStream);
+        return readJson(clazz, new JsonWebReqest<T>(this, "POST", url, body).request().inputStream);
     }
     
     <T>  T postAttachment(Class<T> clazz, String path, T body) {
     	 URL url = getUrl(path, null);
-		return readJson(clazz, new FormWebRequest<T>(this,"POST", url, body).doRequest().inputStream);
+		return readJson(clazz, new FormWebRequest<T>(this,"POST", url, body).request().inputStream);
 	} 
     <T> T postAttachment(Class<T> clazz, URL url, T body) {
-		return readJson(clazz, new FormWebRequest<T>(this,"POST", url, body).doRequest().inputStream);
+		return readJson(clazz, new FormWebRequest<T>(this,"POST", url, body).request().inputStream);
 	}
     <T> T put(Class<T> clazz, String path, T body) {
         return readJson(clazz, request("PUT", path, null, body));
     }
 
     <T> T put(Class<T> clazz, URL url, T body) {
-        return readJson(clazz, request(url, "PUT", body).inputStream);
+        return readJson(clazz, new JsonWebReqest<T>(this, "PUT", url, body).request().inputStream);
     }
 
     <T> T get(Class<T> clazz, String path, List<String[]> params) {
@@ -75,7 +75,7 @@ class Client {
     }
 
     <T> T get(Class<T> clazz, URL url) {
-        return readJson(clazz, request(url, "GET", null).inputStream);
+        return readJson(clazz, new JsonWebReqest<T>(this, "GET", url, null).request().inputStream);
     }
 
     <T> Iterator<T> list(Class<T> clazz, String path, List<String[]> params) {
@@ -134,7 +134,7 @@ class Client {
 
     <T> InputStream request(String method, String path, List<String[]> params, T body) {
         URL url = getUrl(path, params);
-        return request(url, method, body).inputStream;
+        return new JsonWebReqest<T>(this, method, url, body).request().inputStream;
     }
     static class Response {
         HttpURLConnection connection;
@@ -146,7 +146,7 @@ class Client {
         }
     }
 
-    <T> Response request(URL url, String method, T body) {
+  /*  <T> Response request(URL url, String method, T body) {
         if (accessToken == null) {
             if (!authenticate()) {
                 throw new NotAuthenticatedException();
@@ -162,32 +162,8 @@ class Client {
                 throw ex;
             }
         }
-    }
+    }*/
     
-    <T> Response requestAttachment(URL url, String method, T body) {
-        if (accessToken == null) {
-            if (!authenticate()) {
-                throw new NotAuthenticatedException();
-            }
-        }
-
-        try {
-            return doRequestAttachment(url, method, body);
-        } catch (NotAuthenticatedException ex) {
-            if (authenticate()) {
-                return doRequest(url, method, body);
-            } else {
-                throw ex;
-            }
-        }
-    }
-    
-
-    <T> Response doRequestAttachment(URL url, String method, T body) {
-		// TODO Auto-generated method stub
-		return null;
-	}
-
 	private boolean authenticate() {
         if (clientId != null && clientSecret != null) {
             if (authCode != null && redirectUri != null) {
@@ -547,7 +523,7 @@ class Client {
             try {
                 if (current == null) {
                     if (parser == null) {
-                        Response response = request(url, "GET", null);
+                        Response response = new JsonWebReqest<T>(Client.this, "GET", url, null).request();
                         InputStream inputStream = response.inputStream;
                         connection = response.connection;
                         parser = Json.createParser(inputStream);

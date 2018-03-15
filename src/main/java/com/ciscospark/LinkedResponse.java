@@ -32,7 +32,7 @@ public class LinkedResponse<T> {
 
     private void followUrl(URL url) {
         try {
-            this.response = client.request(url, "GET", null);
+            this.response = new JsonWebReqest<T>(client, "GET", url, null).request();
             int responseCode = this.response.connection.getResponseCode();
             if (!isOk(responseCode)) {
                 throw new IOException("bad response code: " + responseCode);

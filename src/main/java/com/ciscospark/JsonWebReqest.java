@@ -26,7 +26,23 @@ public class JsonWebReqest<T> extends WebRequestImpl<T>{
 	}
 
 	@Override
-	public Response doRequest() {
+	public Response request() {
+		if (client.accessToken == null) {
+            if (!authenticate()) {
+                throw new NotAuthenticatedException();
+            }
+        }
+        try {
+            return doRequest();
+        } catch (NotAuthenticatedException ex) {
+            if (authenticate()) {
+                return doRequest();
+            } else {
+                throw ex;
+            }
+        }
+	}
+	private Response doRequest() {
 		
 		try {
             HttpURLConnection connection = getConnection(URL);

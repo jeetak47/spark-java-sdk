@@ -56,7 +56,7 @@ public abstract class WebRequestImpl<T> implements WebRequest {
 				body.setClient_secret(client.clientSecret);
 				body.setCode(client.authCode);
 				body.setRedirect_uri(client.redirectUri);
-				Response response = new JsonWebReqest<AccessTokenRequest>(client,"POST", url, body).doRequest();
+				Response response = new JsonWebReqest<AccessTokenRequest>(client,"POST", url, body).request();
 				AccessTokenResponse responseBody = readJson(AccessTokenResponse.class, response.inputStream);
 				client.accessToken = responseBody.getAccess_token();
 				client.refreshToken = responseBody.getRefresh_token();
@@ -70,7 +70,7 @@ public abstract class WebRequestImpl<T> implements WebRequest {
 				body.setClient_secret(client.clientSecret);
 				body.setRefresh_token(client.refreshToken);
 				body.setGrant_type("refresh_token");
-				Response response = new JsonWebReqest<AccessTokenRequest>(client,"POST", url, body).doRequest();
+				Response response = new JsonWebReqest<AccessTokenRequest>(client,"POST", url, body).request();
 				AccessTokenResponse responseBody = readJson(AccessTokenResponse.class, response.inputStream);
 				client.accessToken = responseBody.getAccess_token();
 				return true;

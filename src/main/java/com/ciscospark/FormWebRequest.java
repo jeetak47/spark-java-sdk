@@ -31,7 +31,24 @@ public class FormWebRequest<T> extends WebRequestImpl<T> {
 	}
 
 	@Override
-	public Response doRequest() {
+	public Response request() {
+		if (client.accessToken == null) {
+            if (!authenticate()) {
+                throw new NotAuthenticatedException();
+            }
+        }
+        try {
+            return doRequest();
+        } catch (NotAuthenticatedException ex) {
+            if (authenticate()) {
+                return doRequest();
+            } else {
+                throw ex;
+            }
+        }
+	}
+	
+	private Response doRequest() {
 		try {
 			HttpURLConnection connection = this.getConnection(URL);
 			 String trackingId = connection.getRequestProperty(TRACKING_ID);
@@ -163,6 +180,5 @@ public class FormWebRequest<T> extends WebRequestImpl<T> {
         writer.append(LINE_FEED);
         writer.flush();
     }
-	
 
 }
