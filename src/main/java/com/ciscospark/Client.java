@@ -54,7 +54,14 @@ class Client {
     <T> T post(Class<T> clazz, URL url, T body) {
         return readJson(clazz, request(url, "POST", body).inputStream);
     }
-
+    
+    <T>  T postAttachment(Class<T> clazz, String path, T body) {
+    	 URL url = getUrl(path, null);
+		return readJson(clazz, new FormWebRequest<T>(this,"POST", url, body).doRequest().inputStream);
+	} 
+    <T> T postAttachment(Class<T> clazz, URL url, T body) {
+		return readJson(clazz, new FormWebRequest<T>(this,"POST", url, body).doRequest().inputStream);
+	}
     <T> T put(Class<T> clazz, String path, T body) {
         return readJson(clazz, request("PUT", path, null, body));
     }
@@ -156,8 +163,32 @@ class Client {
             }
         }
     }
+    
+    <T> Response requestAttachment(URL url, String method, T body) {
+        if (accessToken == null) {
+            if (!authenticate()) {
+                throw new NotAuthenticatedException();
+            }
+        }
 
-    private boolean authenticate() {
+        try {
+            return doRequestAttachment(url, method, body);
+        } catch (NotAuthenticatedException ex) {
+            if (authenticate()) {
+                return doRequest(url, method, body);
+            } else {
+                throw ex;
+            }
+        }
+    }
+    
+
+    <T> Response doRequestAttachment(URL url, String method, T body) {
+		// TODO Auto-generated method stub
+		return null;
+	}
+
+	private boolean authenticate() {
         if (clientId != null && clientSecret != null) {
             if (authCode != null && redirectUri != null) {
                 log(Level.FINE, "Requesting access token");
@@ -422,7 +453,7 @@ class Client {
         }
     }
 
-    private URL getUrl(String path, List<String[]> params) {
+    URL getUrl(String path, List<String[]> params) {
         final StringBuilder urlStringBuilder = new StringBuilder(baseUri.toString() + path);
         if (params != null) {
             urlStringBuilder.append("?");
@@ -604,4 +635,9 @@ class Client {
         }
         return result;
     }
+
+	
+
+	
+	
 }

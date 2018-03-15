@@ -13,6 +13,7 @@ public interface RequestBuilder<T> {
     <NewType> RequestBuilder<NewType> path(String path, Class<NewType> clazz);
     RequestBuilder<T> url(URL url);
     T post(T body);
+    T postAttachment(T body);
     T put(T body);
     T get();
     Iterator<T> iterate();

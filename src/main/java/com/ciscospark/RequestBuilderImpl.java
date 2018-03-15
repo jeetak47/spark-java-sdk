@@ -105,4 +105,13 @@ class RequestBuilderImpl<T> implements RequestBuilder<T> {
             client.delete(pathBuilder.toString());
         }
     }
+
+	@Override
+	public T postAttachment(T body) {
+		  if (url != null) {
+	            return client.postAttachment(clazz, url, body);
+	        } else {
+	            return client.postAttachment(clazz, pathBuilder.toString(), body);
+	        }
+	}
 }
