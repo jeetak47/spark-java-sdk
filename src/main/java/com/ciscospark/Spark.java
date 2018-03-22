@@ -29,6 +29,9 @@ public abstract class Spark {
         private String refreshToken;
         private String clientId;
         private String clientSecret;
+        private String proxyHost;
+        private int proxyPort;
+        
         private Logger logger;
         private URI baseUrl = URI.create("https://api.ciscospark.com/v1");
 
@@ -71,9 +74,17 @@ public abstract class Spark {
             this.logger = logger;
             return this;
         }
-
+        
+        public Builder proxyHost(String proxyHost) {
+            this.proxyHost = proxyHost;
+            return this;
+        }
+        public Builder proxyPort(int proxyPort) {
+            this.proxyPort = proxyPort;
+            return this;
+        }
         public Spark build() {
-            return new SparkImpl(new Client(baseUrl, authCode, redirectUri, accessToken, refreshToken, clientId, clientSecret, logger));
+            return new SparkImpl(new Client(baseUrl, authCode, redirectUri, accessToken, refreshToken, clientId, clientSecret, logger,proxyHost,proxyPort));
         }
     }
 

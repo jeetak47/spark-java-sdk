@@ -35,8 +35,10 @@ class Client {
     final String clientId;
     final String clientSecret;
     final Logger logger;
-
-    Client(URI baseUri, String authCode, URI redirectUri, String accessToken, String refreshToken, String clientId, String clientSecret, Logger logger) {
+    final String proxyHost;
+    final int proxyPort;
+    
+    Client(URI baseUri, String authCode, URI redirectUri, String accessToken, String refreshToken, String clientId, String clientSecret, Logger logger,String proxyHost,int proxyPort) {
         this.authCode = authCode;
         this.redirectUri = redirectUri;
         this.baseUri = baseUri;
@@ -44,6 +46,8 @@ class Client {
         this.refreshToken = refreshToken;
         this.clientId = clientId;
         this.clientSecret = clientSecret;
+        this.proxyHost=proxyHost;
+        this.proxyPort=proxyPort;		
         this.logger = logger;
     }
 
@@ -223,7 +227,16 @@ class Client {
     }
 
     private HttpURLConnection getConnection(URL url) throws IOException {
-        HttpURLConnection connection = (HttpURLConnection) url.openConnection();
+    	HttpURLConnection connection;
+    	if(proxyHost!=null){
+    		SocketAddress addr = new InetSocketAddress(proxyHost, proxyPort==0?80:proxyPort);
+    		Proxy proxy = new Proxy(Proxy.Type.HTTP,addr);
+    		 connection = (HttpURLConnection) url.openConnection(proxy);	
+    	}else {
+    		 connection = (HttpURLConnection) url.openConnection();
+		}
+    	connection.setConnectTimeout(0);
+    	connection.setReadTimeout(0);
         connection.setRequestProperty("Content-type", "application/json");
         if (accessToken != null) {
             String authorization = accessToken;

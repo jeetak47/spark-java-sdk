@@ -7,6 +7,9 @@ import java.io.InputStream;
 import java.lang.reflect.Array;
 import java.lang.reflect.Field;
 import java.net.HttpURLConnection;
+import java.net.InetSocketAddress;
+import java.net.Proxy;
+import java.net.SocketAddress;
 import java.net.URI;
 import java.net.URL;
 import java.text.DateFormat;
@@ -269,8 +272,17 @@ public abstract class WebRequestImpl<T> implements WebRequest {
 	    }
 	    
 	    protected HttpURLConnection getConnection(URL url) throws IOException {
-	        HttpURLConnection connection = (HttpURLConnection) url.openConnection();
-	        connection.setRequestProperty("Content-type", "application/json");
+	    	HttpURLConnection connection;
+	    	if(client.proxyHost!=null){
+	    		SocketAddress addr = new InetSocketAddress(client.proxyHost, client.proxyPort==0?80:client.proxyPort);
+	    		Proxy proxy = new Proxy(Proxy.Type.HTTP,addr);
+	    		 connection = (HttpURLConnection) url.openConnection(proxy);	
+	    	}else {
+	    		 connection = (HttpURLConnection) url.openConnection();
+			}
+	    	connection.setConnectTimeout(0);
+	    	connection.setReadTimeout(0);
+	    	connection.setRequestProperty("Content-type", "application/json");
 	        if (client.accessToken != null) {
 	            String authorization = client.accessToken;
 	            if (!authorization.startsWith("Bearer ")) {
